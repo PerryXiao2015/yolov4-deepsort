@@ -43,6 +43,15 @@ flags.DEFINE_boolean('dont_show', False, 'dont show video output')
 flags.DEFINE_boolean('info', False, 'show detailed info of tracked objects')
 flags.DEFINE_boolean('count', False, 'count objects being tracked on screen')
 
+#Camera focal length in mm
+#https://shop.pimoroni.com/products/raspberry-pi-zero-camera-module?variant=37751082058
+
+focalLength = 3.60 #mm 
+#Car length in mm
+carHeight = 1460
+scale=0.3 #distance scale factor
+distance = -1
+
 def main(_argv):
     # Definition of the parameters
     max_cosine_distance = 0.4
@@ -215,7 +224,10 @@ def main(_argv):
             color = [i * 255 for i in color]
             cv2.rectangle(frame, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])), color, 2)
             cv2.rectangle(frame, (int(bbox[0]), int(bbox[1]-30)), (int(bbox[0])+(len(class_name)+len(str(track.track_id)))*17, int(bbox[1])), color, -1)
-            cv2.putText(frame, class_name + "-" + str(track.track_id),(int(bbox[0]), int(bbox[1]-10)),0, 0.75, (255,255,255),2)
+            h=int(bbox[3])
+            distance = carHeight  * focalLength /h*scale    #distance in m
+            
+            cv2.putText(frame, class_name + "-" + str(track.track_id)+" D:"+str((int(distance*10)/10)),(int(bbox[0]), int(bbox[1]-10)),0, 0.75, (255,255,255),2)
 
         # if enable info flag then print details about each track
             if FLAGS.info:
