@@ -51,6 +51,7 @@ focalLength = 3.60 #mm
 carHeight = 1460
 scale=0.3 #distance scale factor
 distance = -1
+pts = [deque(maxlen=30) for _ in range(1000)]
 
 def main(_argv):
     # Definition of the parameters
@@ -228,7 +229,18 @@ def main(_argv):
             distance = carHeight  * focalLength /h*scale    #distance in m
             
             cv2.putText(frame, class_name + "-" + str(track.track_id)+" D:"+str((int(distance*10)/10)),(int(bbox[0]), int(bbox[1]-10)),0, 0.75, (255,255,255),2)
+        
+        #Draw MOT lines=======================================================================================================================================
+        #https://github.com/emasterclassacademy/Single-Multiple-Custom-Object-Detection-and-Tracking/blob/master/object_tracker.py
+        center = (int(((bbox[0]) + (bbox[2]))/2), int(((bbox[1])+(bbox[3]))/2))
+        pts[track.track_id].append(center)
 
+        for j in range(1, len(pts[track.track_id])):
+            if pts[track.track_id][j-1] is None or pts[track.track_id][j] is None:
+                continue
+            thickness = int(np.sqrt(64/float(j+1))*2)
+            cv2.line(frame, (pts[track.track_id][j-1]), (pts[track.track_id][j]), color, thickness)
+        #======================================================================================================================================================    
         # if enable info flag then print details about each track
             if FLAGS.info:
                 print("Tracker ID: {}, Class: {},  BBox Coords (xmin, ymin, xmax, ymax): {}".format(str(track.track_id), class_name, (int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3]))))
